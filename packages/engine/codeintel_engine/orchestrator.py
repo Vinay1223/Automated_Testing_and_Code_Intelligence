@@ -179,19 +179,24 @@ class Orchestrator:
         try:
             task = asyncio.create_task(self.run(target))
             while True:
+                getter = asyncio.create_task(queue.get())
                 done, _ = await asyncio.wait(
-                    {task, asyncio.create_task(queue.get())},
+                    {task, getter},
                     return_when=asyncio.FIRST_COMPLETED,
                 )
-                for fut in done:
-                    if fut is task:
-                        await queue.put(None)
-                    else:
-                        item = fut.result()
-                        if item is None:
-                            await task
-                            return
-                        yield item
+                if getter in done:
+                    item = getter.result()
+                    if item is None:
+                        await task
+                        return
+                    yield item
+                else:
+                    getter.cancel()
+                    try:
+                        await getter
+                    except asyncio.CancelledError:
+                        pass
+                    await queue.put(None)
         finally:
             self._config.on_event = original
 

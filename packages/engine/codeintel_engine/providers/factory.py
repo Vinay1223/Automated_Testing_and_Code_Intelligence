@@ -25,4 +25,4 @@ def get_provider(name: str) -> Provider:
         raise ProviderError(
             f"Unknown provider {name!r}. Available: {sorted(_BUILDERS)}"
         )
-    return builder()  # type: ignore[call-arg]
+    return builder()

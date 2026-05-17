@@ -24,7 +24,7 @@ from codeintel_engine.adapters import (
 )
 from codeintel_engine.adapters.base import registry
 from codeintel_engine.coverage import static_coverage
-from codeintel_engine.models import Language, TestFramework
+from codeintel_engine.models import FunctionTarget, Language, TestFramework
 from codeintel_engine.orchestrator import Orchestrator, OrchestratorConfig
 from codeintel_engine.providers import get_provider
 from codeintel_engine.sandbox.local_runner import LocalSandbox
@@ -93,7 +93,7 @@ async def _scan(args: argparse.Namespace) -> int:
 
 
 async def _run(args: argparse.Namespace) -> int:
-    targets: list = []
+    targets: list[FunctionTarget] = []
     for lang in Language:
         try:
             adapter = registry.get(lang)

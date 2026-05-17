@@ -11,7 +11,7 @@ from codeintel_engine.profilers.python_ast import PythonAstProfiler
 class PythonAdapter:
     language = Language.PYTHON
     default_framework = TestFramework.PYTEST
-    file_extensions = (".py",)
+    file_extensions: tuple[str, ...] = (".py",)
 
     def __init__(self) -> None:
         self._profiler = PythonAstProfiler()

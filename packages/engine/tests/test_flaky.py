@@ -1,5 +1,4 @@
 import pytest
-
 from codeintel_engine.flaky import detect_flake
 from codeintel_engine.models import Verdict
 

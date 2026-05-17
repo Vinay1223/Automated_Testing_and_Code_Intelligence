@@ -3,13 +3,13 @@ from __future__ import annotations
 from pathlib import Path
 
 from codeintel_engine.models import (
+    TERMINAL_STATES,
     FunctionTarget,
     Language,
     RunState,
     RunSummary,
     TestFramework,
     TestRun,
-    TERMINAL_STATES,
 )
 
 

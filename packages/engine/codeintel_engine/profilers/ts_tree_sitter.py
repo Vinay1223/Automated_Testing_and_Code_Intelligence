@@ -11,7 +11,9 @@ from __future__ import annotations
 
 import logging
 import re
+from collections.abc import Iterator
 from pathlib import Path
+from typing import Any
 
 from codeintel_engine.models import FunctionTarget, Language
 from codeintel_engine.profilers.base import iter_source_files
@@ -43,7 +45,7 @@ class TypeScriptProfiler:
     @staticmethod
     def _load_parser() -> object | None:
         try:
-            from tree_sitter_language_pack import get_parser  # type: ignore[import-not-found]
+            from tree_sitter_language_pack import get_parser
 
             return get_parser("typescript")
         except Exception as e:  # pragma: no cover - exercised only when wheel missing
@@ -163,13 +165,13 @@ _FUNCTION_NODE_TYPES: frozenset[str] = frozenset(
 )
 
 
-def _walk(node):  # type: ignore[no-untyped-def]
+def _walk(node: Any) -> Iterator[Any]:
     yield node
     for child in node.children:
         yield from _walk(child)
 
 
-def _function_name(node, source: str) -> str | None:  # type: ignore[no-untyped-def]
+def _function_name(node: Any, source: str) -> str | None:
     if node.type not in _FUNCTION_NODE_TYPES:
         return None
     for child in node.children:

@@ -35,7 +35,7 @@ class BedrockProvider:
         model: str | None = None,
     ) -> ProviderResponse:
         try:
-            import boto3  # type: ignore[import-not-found]
+            import boto3  # type: ignore[import-untyped]
         except ImportError as e:
             raise ProviderError("boto3 is required for the Bedrock provider") from e
 

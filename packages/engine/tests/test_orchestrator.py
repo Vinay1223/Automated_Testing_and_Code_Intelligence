@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-import asyncio
 from pathlib import Path
 
 import pytest
-
 from codeintel_engine.adapters import registry  # noqa: F401 (registers adapters)
 from codeintel_engine.models import (
     EngineEvent,
@@ -13,7 +11,6 @@ from codeintel_engine.models import (
     ProviderResponse,
     ProviderUsage,
     RunState,
-    TestFramework,
     TestGenerationResult,
     Verdict,
 )

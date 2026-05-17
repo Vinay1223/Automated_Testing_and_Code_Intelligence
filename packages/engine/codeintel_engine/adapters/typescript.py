@@ -11,7 +11,14 @@ from codeintel_engine.profilers.ts_tree_sitter import TypeScriptProfiler
 class TypeScriptAdapter:
     language = Language.TYPESCRIPT
     default_framework = TestFramework.JEST
-    file_extensions = (".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs")
+    file_extensions: tuple[str, ...] = (
+        ".ts",
+        ".tsx",
+        ".js",
+        ".jsx",
+        ".mjs",
+        ".cjs",
+    )
 
     def __init__(self) -> None:
         self._profiler = TypeScriptProfiler()

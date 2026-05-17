@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-
 from codeintel_engine.adapters.python import PythonAdapter
 from codeintel_engine.sandbox.base import SandboxRequest
 from codeintel_engine.sandbox.local_runner import LocalSandbox

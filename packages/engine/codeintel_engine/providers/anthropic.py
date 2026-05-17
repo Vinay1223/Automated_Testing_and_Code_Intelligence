@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from typing import Any
 
 from codeintel_engine.models import (
     ProviderResponse,
@@ -40,9 +41,10 @@ class AnthropicProvider:
             output_type=TestGenerationResult,
             system_prompt=system_prompt,
         )
-        result = await agent.run(
-            user_prompt, **({"message_history": history} if history else {})
-        )
+        kwargs: dict[str, Any] = {}
+        if history:
+            kwargs["message_history"] = history
+        result = await agent.run(user_prompt, **kwargs)
         return ProviderResponse(
             result=result.output,
             usage=ProviderUsage(),

@@ -17,7 +17,7 @@ jobs:
       - name: Install Python
         run: uv python install 3.12
       - name: Sync workspace
-        run: uv sync --all-extras
+        run: uv sync --all-packages --group dev
       - name: Ruff
         run: uv run ruff check .
       - name: Mypy (engine)
@@ -31,14 +31,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
+        with:
+          version: 9
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "pnpm"
+          cache-dependency-path: pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
-      - run: pnpm -r lint --if-present
-      - run: pnpm -r build --if-present
-      - run: pnpm -r test --if-present
+      - run: pnpm -r --if-present lint
+      - run: pnpm -r --if-present build
+      - run: pnpm -r --if-present test
 
   docker:
     name: Sandbox images build

@@ -52,7 +52,7 @@ class GroqProvider:
         data: TestGenerationResult = result.output
         usage = ProviderUsage()
         try:
-            u = result.usage()  # type: ignore[attr-defined]
+            u = result.usage()
             usage = ProviderUsage(
                 prompt_tokens=getattr(u, "request_tokens", 0) or 0,
                 completion_tokens=getattr(u, "response_tokens", 0) or 0,
