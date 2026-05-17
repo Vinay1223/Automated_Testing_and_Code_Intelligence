@@ -48,14 +48,18 @@ def run_local_pytest(filename: str) -> tuple[bool, str]:
         return False, f"Failed to execute test runner: {str(e)}"
 
 def run_revision_2():
-    output_filename = "test_target_code.py"
-    
+    output_filename = "tests/test_target_code.py"
+
     print("📖 Reading target_code.py...")
     with open("target_code.py", "r") as f:
         source_code = f.read()
 
-    # Initial prompt
-    user_prompt = f"Please generate a complete pytest suite for the following code:\n\n{source_code}"
+    user_prompt = (
+        "Please generate a complete pytest suite for the following code.\n"
+        "Import the function with: `from target_code import calculate_percentage`\n"
+        "Do not redefine the function in the test file.\n\n"
+        f"{source_code}"
+    )
     
     max_retries = 3
     current_attempt = 0
@@ -78,6 +82,7 @@ def run_revision_2():
         clean_code = agent_data.test_code.replace("```python", "").replace("```", "").strip()
         
         print(f"💾 Saving code to {output_filename} and running validation sandbox...")
+        os.makedirs("tests", exist_ok=True)
         with open(output_filename, "w") as f:
             f.write(clean_code)
             
@@ -105,7 +110,8 @@ def run_revision_2():
                 f"--- PYTEST ERROR LOG ---\n"
                 f"{log}\n"
                 f"------------------------\n\n"
-                f"Please completely fix this. Remove any accidental filenames written outside functions (like line 4). "
+                f"Please completely fix this. Import with `from target_code import calculate_percentage` "
+                f"and do not redefine the function in the test file. "
                 f"Ensure the code is valid Python syntax, imports pytest, and correctly handles the ValueError exception."
             )
             

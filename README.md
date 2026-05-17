@@ -33,8 +33,7 @@ git clone [https://github.com/Vinay1223/Automated_Testing_and_Code_Intelligence.
 cd Automated_Testing_and_Code_Intelligence
 
 # 2. Install dependencies via uv
-uv venv
-uv pip install -r requirements.txt
+uv sync
 
 # 3. Configure Environment Variables
 # Create a .env file in the root directory:

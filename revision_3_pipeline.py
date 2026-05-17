@@ -85,8 +85,7 @@ def run_autonomous_pipeline():
         message_history = None
         passed = False
         
-        # Create a dynamic test filename (e.g., test_add_numbers.py)
-        output_filename = f"test_{func_name}.py"
+        output_filename = f"tests/test_{func_name}.py"
         
         # --- PHASE 3: The Self-Healing Sandbox ---
         while current_attempt < max_retries:
@@ -103,6 +102,7 @@ def run_autonomous_pipeline():
             
             clean_code = agent_data.test_code.replace("```python", "").replace("```", "").strip()
             
+            os.makedirs("tests", exist_ok=True)
             with open(output_filename, "w") as f:
                 f.write(clean_code)
                 

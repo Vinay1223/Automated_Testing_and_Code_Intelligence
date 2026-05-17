@@ -15,19 +15,3 @@ def test_add_mixed_numbers():
 
 def test_add_zero():
     assert add_numbers(0, 0) == 0
-
-
-def test_add_one_positive_and_zero():
-    assert add_numbers(5, 0) == 5
-
-
-def test_add_one_negative_and_zero():
-    assert add_numbers(-5, 0) == -5
-
-
-def test_add_non_integer_input():
-    try:
-        add_numbers(5, '7')
-        assert False, "Expected TypeError to be raised"
-    except TypeError:
-        pass
