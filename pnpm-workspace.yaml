@@ -1,0 +1,5 @@
+packages:
+  - "apps/dashboard"
+  - "apps/vscode-extension"
+  - "packages/sdk-ts"
+  - "packages/ui"

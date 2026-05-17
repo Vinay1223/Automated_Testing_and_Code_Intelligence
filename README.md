@@ -1,45 +1,146 @@
-# 🤖 Autonomous Code Intelligence & Testing Pipeline
+# CodeIntel
 
-[![Python 3.12](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
-[![PydanticAI](https://img.shields.io/badge/Agent_Framework-PydanticAI-ec4a3f.svg)](https://ai.pydantic.dev/)
-[![Testing](https://img.shields.io/badge/Testing-pytest-yellow.svg)](https://docs.pytest.org/en/stable/)
-[![GitHub API](https://img.shields.io/badge/Integration-PyGithub-black.svg)](https://pygithub.readthedocs.io/)
+> AI test engineer that lives in your repo.
 
-An autonomous, multi-agent pipeline designed to perform continuous codebase profiling, test suite generation, and self-healing validation before orchestrating Human-in-the-Loop (HITL) Pull Requests via the GitHub API.
+CodeIntel is a multi-surface platform that scans your code, generates
+high-coverage `pytest` and `jest` suites, validates them in a sandboxed
+container, and opens a clean PR. Three surfaces, one engine:
 
-## 🧠 System Architecture
+- **GitHub App** — auto-opens PRs with tests for newly-changed functions.
+- **VS Code / Cursor extension** — right-click any function → tests in seconds.
+- **SaaS dashboard** — coverage trends, run history, billing, team management.
 
-This system moves beyond simple LLM wrappers by utilizing a highly decoupled, stateful multi-agent graph architecture:
+[![CI](https://github.com/codeintel/codeintel/actions/workflows/ci.yml/badge.svg)](.github/workflows/ci.yml)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/)
+[![Apache 2.0](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
 
-1. **The AST Profiler (Agent 1):** Bypasses massive LLM context windows by utilizing Python's built-in `ast` module to dynamically parse local directories, identify missing test coverage, and extract isolated source-code context packets.
-2. **The Reasoner (Agent 2):** Powered by `PydanticAI` and open-source models, this agent enforces type-safe, structured outputs to generate edge-case-aware `pytest` suites.
-3. **The Self-Healing Sandbox (Agent 3):** An isolated execution loop that automatically runs generated tests against the local environment. If syntax or logic errors occur, it captures CLI `stderr`/`stdout` traces and feeds them back to the Reasoner for autonomous self-correction (up to 3 retries).
-4. **The Git Orchestrator (Agent 4):** A Human-in-the-Loop (HITL) engine that pauses for explicit manual approval before branching off `main`, committing the validated test files, and opening formatted Pull Requests via the GitHub API.
+## Why CodeIntel
 
-## 🚀 Key Engineering Features
+- **Sandboxed validation, not vibes.** Every generated test runs in an
+  ephemeral Docker container with `--network=none`, a read-only repo mount,
+  and tight CPU/memory caps. We never accept a test that fails to execute.
+- **Self-healing.** When the sandbox rejects a test, we feed the exact
+  failure back to the model and try again (up to N retries).
+- **BYO-LLM.** Use our Groq tier or route through your own AWS Bedrock /
+  Azure OpenAI. Your code stays in your cloud.
+- **Polyglot.** Python + TypeScript / JavaScript out of the box, with an
+  adapter pattern that drops Java / Go / C# in next.
+- **Mutation-aware.** Optional [mutation testing](packages/engine/codeintel_engine/mutation.py)
+  proves the generated tests actually catch bugs — not just pad coverage.
+- **Flaky-test guard.** We re-run every generated test 5x before merging;
+  flaky tests never reach your PR.
 
-* **Deterministic Control Loops:** Implements strict validation cycles around stochastic LLM outputs to guarantee perfectly compiling Python code.
-* **Smart Context Injection:** Eliminates "lost-in-the-middle" syndrome by feeding the LLM exact function blocks rather than entire script files.
-* **Automated Exception Handling:** Prompts dynamically adjust to ensure AI-generated tests catch explicit custom exceptions (e.g., `ValueError`) rather than hallucinating generic Python errors.
-* **Anti-Spam PR Engine:** HITL checkpoints ensure open-source maintainers receive zero automated garbage.
+## Architecture
 
-## 🛠️ Quick Start & Setup
+```mermaid
+flowchart LR
+    subgraph clients [Client Surfaces]
+        IDE[VS Code / Cursor]
+        GHApp[GitHub App]
+        Dash[Next.js Dashboard]
+    end
+    subgraph api [API Layer]
+        FastAPI[FastAPI Gateway]
+        Auth[Clerk JWT]
+        Stripe[Stripe Metered Billing]
+    end
+    subgraph engine [CodeIntel Engine]
+        Orch[Orchestrator]
+        Prof[Multi-Lang Profiler]
+        Gen[Generators]
+        Sandbox["Docker Sandbox"]
+        Providers["Groq / OpenAI / Anthropic / Bedrock"]
+    end
+    subgraph data [Data + Infra]
+        PG[(Postgres)]
+        Redis[(Redis)]
+        S3[(S3 artifacts)]
+    end
+    IDE -->|JWT| FastAPI
+    GHApp -->|HMAC| FastAPI
+    Dash -->|JWT| FastAPI
+    FastAPI --> Auth
+    FastAPI --> Stripe
+    FastAPI -->|enqueue| Redis
+    Redis --> Orch
+    Orch --> Prof
+    Orch --> Gen
+    Gen --> Providers
+    Orch --> Sandbox
+    Orch --> PG
+    Orch --> S3
+```
 
-This project uses `uv` for lightning-fast dependency management.
+Full design in [`docs/architecture.md`](docs/architecture.md).
+
+## Repository layout
+
+```
+apps/
+  api/              FastAPI gateway, GitHub + Stripe webhooks, OAuth device flow
+  dashboard/        Next.js 14 (App Router) + Tailwind + Clerk + Stripe
+  vscode-extension/ VS Code / Cursor extension (TypeScript)
+packages/
+  engine/           Pure-Python engine (profilers, generators, sandbox, orchestrator)
+    legacy/         Original revision_*.py prototypes (kept as reference)
+  sdk-ts/           Typed TS SDK shared by the dashboard + extension
+  ui/               Shared shadcn-style React primitives
+infra/
+  docker/           Sandbox images (codeintel-py, codeintel-node)
+  helm/             Helm chart for self-hosted enterprise
+  terraform/        AWS reference deployment (VPC + ECS + RDS + ElastiCache)
+  docker-compose.yml  Local dev (api + dashboard + postgres + redis)
+docs/
+  architecture.md   System design
+  security.md       Threat model, SOC 2 readiness
+  self-hosting.md   Enterprise install
+  pricing.md        Plans + metering
+```
+
+## Quickstart
+
+### One-line demo
 
 ```bash
-# 1. Clone the repository
-git clone [https://github.com/Vinay1223/Automated_Testing_and_Code_Intelligence.git](https://github.com/Vinay1223/Automated_Testing_and_Code_Intelligence.git)
-cd Automated_Testing_and_Code_Intelligence
+uv sync --all-packages
+uv run python -m codeintel_engine.cli scan --repo packages/engine/legacy/sample_repo --coverage
+uv run python -m codeintel_engine.cli run  --repo packages/engine/legacy/sample_repo --function divide_numbers --provider mock
+```
 
-# 2. Install dependencies via uv
-uv venv
-uv pip install -r requirements.txt
+The mock provider runs offline and produces deterministic tests — perfect
+for the 30-second demo. Swap `--provider groq` (or `openai`, `anthropic`,
+`bedrock`) once your API keys are in `.env`.
 
-# 3. Configure Environment Variables
-# Create a .env file in the root directory:
-GROQ_API_KEY=your_groq_api_key
-GITHUB_ACCESS_TOKEN=your_classic_github_token_with_repo_scope
+### Boot the full stack
 
-# 4. Run the Pipeline
-uv run python revision_4_pr_engine.py
+```bash
+cp .env.example .env
+uv sync --all-packages
+pnpm install
+uv run uvicorn codeintel_api.main:app --reload    # http://localhost:8000
+pnpm --filter @codeintel/dashboard dev            # http://localhost:3000
+```
+
+Or `docker compose -f infra/docker-compose.yml up --build`.
+
+### Tests
+
+```bash
+uv run pytest      # 40+ unit + integration tests
+pnpm -r test       # node packages
+```
+
+## Pricing (proposed)
+
+| Tier | Price | Limits |
+|---|---|---|
+| Free | $0 | 100 runs / month, mock provider |
+| Team | **$29 / seat / mo + usage** | Unlimited runs, Groq + OpenAI + Anthropic, GitHub App, IDE extension, SaaS dashboard |
+| Enterprise | Contact sales | Self-hosted Helm chart, BYO-LLM (Bedrock / Azure), SSO, SOC 2, audit log export |
+
+Metered events: `generation_runs`, `sandbox_seconds`, `seats`. Billed
+monthly through Stripe.
+
+## License
+
+Apache-2.0. See [`LICENSE`](LICENSE).

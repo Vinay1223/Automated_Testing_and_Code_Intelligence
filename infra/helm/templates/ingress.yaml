@@ -1,0 +1,26 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: codeintel
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 10m
+spec:
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service: { name: codeintel-api, port: { number: 80 } }
+          - path: /
+            pathType: Prefix
+            backend:
+              service: { name: codeintel-dashboard, port: { number: 80 } }
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts: [ {{ .Values.ingress.host }} ]
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+{{- end }}

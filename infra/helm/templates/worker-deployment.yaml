@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: codeintel-worker
+  labels: { app: codeintel, component: worker }
+spec:
+  replicas: {{ .Values.replicaCount.worker }}
+  selector:
+    matchLabels: { app: codeintel, component: worker }
+  template:
+    metadata:
+      labels: { app: codeintel, component: worker }
+    spec:
+      containers:
+        - name: worker
+          image: "{{ .Values.image.api }}:{{ .Values.image.tag }}"
+          command: ["python", "-m", "codeintel_api.worker"]
+          env:
+            - name: DATABASE_URL
+              valueFrom: { secretKeyRef: { name: codeintel-secrets, key: database_url } }
+            - name: REDIS_URL
+              valueFrom: { secretKeyRef: { name: codeintel-secrets, key: redis_url } }
+            - name: CODEINTEL_SANDBOX_PY_IMAGE
+              value: {{ .Values.image.sandboxPy | quote }}
+            - name: CODEINTEL_SANDBOX_NODE_IMAGE
+              value: {{ .Values.image.sandboxNode | quote }}
+          resources:
+            requests:
+              cpu: {{ .Values.resources.worker.requests.cpu }}
+              memory: {{ .Values.resources.worker.requests.memory }}
+            limits:
+              cpu: {{ .Values.resources.worker.limits.cpu }}
+              memory: {{ .Values.resources.worker.limits.memory }}
