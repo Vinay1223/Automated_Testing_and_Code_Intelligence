@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  python:
+    name: Python (engine + api)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+      - name: Install Python
+        run: uv python install 3.12
+      - name: Sync workspace
+        run: uv sync --all-extras
+      - name: Ruff
+        run: uv run ruff check .
+      - name: Mypy (engine)
+        run: uv run mypy packages/engine/codeintel_engine
+      - name: Pytest with coverage gate
+        run: uv run pytest --cov=codeintel_engine --cov=codeintel_api --cov-report=term-missing --cov-fail-under=80
+
+  node:
+    name: Node (dashboard + extension)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r lint --if-present
+      - run: pnpm -r build --if-present
+      - run: pnpm -r test --if-present
+
+  docker:
+    name: Sandbox images build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build python sandbox
+        uses: docker/build-push-action@v6
+        with:
+          context: infra/docker
+          file: infra/docker/codeintel-py.Dockerfile
+          push: false
+          tags: codeintel-py:dev
+      - name: Build node sandbox
+        uses: docker/build-push-action@v6
+        with:
+          context: infra/docker
+          file: infra/docker/codeintel-node.Dockerfile
+          push: false
+          tags: codeintel-node:dev

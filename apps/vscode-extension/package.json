@@ -1,0 +1,117 @@
+{
+  "name": "codeintel-vscode",
+  "displayName": "CodeIntel",
+  "description": "AI test engineer that lives in your repo. Right-click any function to generate, validate, and open a PR with tests.",
+  "version": "0.1.0",
+  "publisher": "codeintel",
+  "license": "Apache-2.0",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "icon": "media/icon.png",
+  "categories": [
+    "AI",
+    "Testing",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "ai",
+    "tests",
+    "pytest",
+    "jest",
+    "tdd",
+    "coverage",
+    "codeintel"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codeintel/codeintel"
+  },
+  "activationEvents": [
+    "onLanguage:python",
+    "onLanguage:typescript",
+    "onLanguage:typescriptreact",
+    "onLanguage:javascript",
+    "onLanguage:javascriptreact"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "codeintel.generateTestsForFunction",
+        "title": "CodeIntel: Generate Tests for Function"
+      },
+      {
+        "command": "codeintel.scanFile",
+        "title": "CodeIntel: Scan File for Uncovered Functions"
+      },
+      {
+        "command": "codeintel.openDashboard",
+        "title": "CodeIntel: Open Dashboard"
+      },
+      {
+        "command": "codeintel.signIn",
+        "title": "CodeIntel: Sign In"
+      },
+      {
+        "command": "codeintel.signOut",
+        "title": "CodeIntel: Sign Out"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "codeintel.generateTestsForFunction",
+          "when": "editorTextFocus && resourceLangId =~ /python|typescript|typescriptreact|javascript|javascriptreact/",
+          "group": "codeintel@1"
+        },
+        {
+          "command": "codeintel.scanFile",
+          "when": "editorTextFocus && resourceLangId =~ /python|typescript|typescriptreact|javascript|javascriptreact/",
+          "group": "codeintel@2"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "CodeIntel",
+      "properties": {
+        "codeintel.apiUrl": {
+          "type": "string",
+          "default": "https://api.codeintel.dev",
+          "description": "Base URL of the CodeIntel API. Set to http://localhost:8000 for local dev."
+        },
+        "codeintel.provider": {
+          "type": "string",
+          "enum": ["mock", "groq", "openai", "anthropic", "bedrock"],
+          "default": "groq",
+          "description": "Which LLM provider to use for generation."
+        },
+        "codeintel.maxRetries": {
+          "type": "number",
+          "default": 3,
+          "minimum": 1,
+          "maximum": 10,
+          "description": "Maximum self-healing retries per function."
+        },
+        "codeintel.openDiffOnSuccess": {
+          "type": "boolean",
+          "default": true,
+          "description": "Open the generated test in a side-by-side diff after a successful run."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run build",
+    "build": "tsc -p .",
+    "watch": "tsc -p . -w",
+    "lint": "tsc -p . --noEmit",
+    "package": "vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.1.0",
+    "typescript": "^5.6.2"
+  }
+}

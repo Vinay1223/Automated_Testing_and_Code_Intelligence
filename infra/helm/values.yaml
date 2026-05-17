@@ -1,0 +1,57 @@
+# Enterprise self-hosted defaults. Override per environment.
+
+image:
+  api: ghcr.io/codeintel/api
+  dashboard: ghcr.io/codeintel/dashboard
+  sandboxPy: ghcr.io/codeintel/sandbox-py:3.12
+  sandboxNode: ghcr.io/codeintel/sandbox-node:20
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+replicaCount:
+  api: 2
+  dashboard: 2
+  worker: 4
+
+resources:
+  api:
+    requests: { cpu: "200m", memory: "512Mi" }
+    limits:   { cpu: "1000m", memory: "1Gi" }
+  worker:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits:   { cpu: "2000m", memory: "2Gi" }
+
+ingress:
+  enabled: true
+  host: codeintel.example.com
+  tls:
+    enabled: true
+    secretName: codeintel-tls
+
+postgres:
+  external: false
+  url: ""
+
+redis:
+  external: false
+  url: ""
+
+provider:
+  default: bedrock
+  bedrock:
+    region: us-east-1
+
+auth:
+  provider: clerk     # clerk | sso-saml | none
+  clerk:
+    jwksUrl: ""
+    audience: ""
+  sso:
+    metadataUrl: ""
+
+audit:
+  enabled: true
+  sink: s3            # s3 | splunk | datadog
+  s3:
+    bucket: ""
+    region: ""

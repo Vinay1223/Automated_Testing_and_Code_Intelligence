@@ -1,0 +1,9 @@
+apiVersion: v2
+name: codeintel
+description: Self-hosted CodeIntel (API + dashboard + worker)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+home: https://codeintel.dev
+sources:
+  - https://github.com/codeintel/codeintel
