@@ -7,8 +7,9 @@ RUN apk add --no-cache tini \
       typescript@5.6.2 \
       jest-junit@16.0.0
 
-RUN addgroup -g 1000 sandbox && adduser -D -u 1000 -G sandbox sandbox
-USER sandbox
+# node:20-alpine already reserves uid 1000 for the `node` user; reuse it
+# instead of creating a conflicting uid.
+USER node
 WORKDIR /repo
 
 ENTRYPOINT ["/sbin/tini", "--", "npx", "jest"]

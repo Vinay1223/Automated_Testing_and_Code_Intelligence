@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import pytest
-
-from codeintel_engine.providers import MockProvider, get_provider, ProviderError
+from codeintel_engine.providers import MockProvider, ProviderError, get_provider
 
 
 @pytest.mark.asyncio

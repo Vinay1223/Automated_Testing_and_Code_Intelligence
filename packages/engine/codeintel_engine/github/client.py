@@ -24,7 +24,7 @@ class CommitFile:
 class GitHubClient:
     def __init__(self, token: str, *, default_repo: str | None = None) -> None:
         try:
-            from github import Github  # type: ignore[import-not-found]
+            from github import Github
         except ImportError as e:  # pragma: no cover
             raise RuntimeError("PyGithub is required for GitHubClient") from e
         self._gh = Github(token)
@@ -56,7 +56,7 @@ class GitHubClient:
             )
         pr = repo.create_pull(title=title, body=body, head=branch_name, base=default_branch)
         logger.info("Opened PR %s", pr.html_url)
-        return pr.html_url
+        return str(pr.html_url)
 
     def post_review_comment(
         self, *, repo_full_name: str, pr_number: int, body: str
